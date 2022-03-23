@@ -3,8 +3,7 @@ module Main where
 import Prelude
 
 import Data.Foldable (for_)
-import Deku.Control.Functions.Graph (freeze, (@!>))
-import Deku.Create (icreate)
+import Deku.Control.Functions (u, freeze, (@>))
 import Deku.Graph.DOM (root)
 import Deku.Graph.DOM.Shorthand as S
 import Deku.Interpret (makeFFIDOMSnapshot)
@@ -25,8 +24,8 @@ main = do
       ( run (pure unit) (pure unit) defaultOptions ffi
           $
             ( \_ _ ->
-                (icreate $ root elt (S.text "Hello world"))
-            ) @!> freeze
+                u $ root elt (S.text "Hello world")
+            ) @> freeze
 
       )
       (_.res >>> pure)
