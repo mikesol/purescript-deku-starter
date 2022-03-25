@@ -2,6 +2,7 @@
 , name = "deku-starter"
 , dependencies =
   [ "deku"
+  , "deku-toplevel"
   , "effect"
   , "event"
   , "foldable-traversable"
