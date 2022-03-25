@@ -163,7 +163,7 @@ let additions =
   , "web-dom"
   , "web-events"
   ], repo = "https://github.com/mikesol/purescript-deku.git"
-        , version = "v0.0.2"
+        , version = "v0.0.3"
       },deku-toplevel = {
         dependencies =  [ "arrays"
   , "behaviors"
