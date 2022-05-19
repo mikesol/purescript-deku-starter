@@ -3,8 +3,8 @@ module Main where
 import Prelude
 
 import Deku.Control (text_)
-import Deku.Toplevel ((🚀))
+import Deku.Toplevel (runInBody)
 import Effect (Effect)
 
 main :: Effect Unit
-main = unit 🚀 \_ _ -> text_ "Hello world"
+main = runInBody (text_ "Hello world")

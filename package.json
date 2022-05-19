@@ -9,9 +9,9 @@
     "postcss": "^8.2.8",
     "postcss-loader": "^5.2.0",
     "postcss-preset-env": "^6.7.0",
-    "purescript": "^0.14.7",
-    "purs-tidy": "^0.7.0",
-    "spago": "^0.20.7",
+    "purescript": "^0.15.2",
+    "purs-tidy": "^0.9.0",
+    "spago": "^0.20.9",
     "style-loader": "^2.0.0",
     "tailwind": "^4.0.0",
     "tailwindcss": "^2.0.4",
@@ -20,9 +20,9 @@
     "webpack-dev-server": "^3.11.2"
   },
   "scripts": {
-    "postinstall": "spago install && spago build",
+    "postinstall": "spago build",
     "start": "webpack serve --mode=development",
-    "build": "webpack",
+    "build": "spago build && webpack",
     "clean": "rm -rf node_modules && rm -rf .spago && rm -rf output"
   },
   "dependencies": {
