@@ -3,7 +3,7 @@
 , dependencies =
   [ "deku"
   , "effect"
-  , "event"
+  , "hyrule"
   , "foldable-traversable"
   , "prelude"
   , "web-html"
