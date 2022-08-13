@@ -51,12 +51,11 @@ data Action = EmitMe String | DeleteMe | AddMe
 derive instance genericAction :: Generic Action _
 instance eqAction :: Eq Action where eq = genericEq
 
-initialActions :: ∀ s m. MonadST s m => MailEvent m SourceId Action
-initialActions = (pure $ stamp 0 AddMe) <|> (pure $ stamp 1 AddMe)
-
-dynamicPart :: ∀ s m l p . Korok s m => MailHub m SourceId Action -> Domable m l p
-dynamicPart (mailPush /\ mailEv) = do
-  D.div_
+dynamicPart :: ∀ s m l p . Korok s m => MailHub m SourceId Action
+  -> { ent :: Domable m l p, childEv :: MailEvent m SourceId Action }
+dynamicPart (mailPush /\ mailEv') = do
+  { childEv: mailEv
+  , ent: D.div_
     [ dyn_ D.div $ mkRowEv <$> serializedIdsEv
     , D.div_
         [ D.button
@@ -64,7 +63,10 @@ dynamicPart (mailPush /\ mailEv) = do
             [ text_ "+" ]
         ]
     ]
+  }
   where
+    mailEv = mailEv' <|> (pure $ stamp 0 AddMe) <|> (pure $ stamp 1 AddMe)
+
     serializedIdsEv :: AnEvent m SourceId
     serializedIdsEv = filterMap
       (\{address, payload} -> if payload == AddMe then Just address else Nothing)
@@ -141,15 +143,14 @@ initialState =
 
 nut :: ∀ s m l p. Korok s m => Domable m l p
 nut = DekuDo.do
-  childPush /\ childEv' <- bussedUncurried
-  let childEv = childEv' <|> initialActions
-  let stateFEv = convertUpwardsActionToState <$> childEv
+  { ent, childEv } <- useChild dynamicPart
 
+  let stateFEv = convertUpwardsActionToState <$> childEv
   stateEv <- envy <<< memoize do
     (fold ($) (stateFEv <|> pure identity) (initialState))
 
   D.div_
-    [ dynamicPart (childPush /\ childEv)
+    [ ent
     , D.div_ [ text (stateEv <#> \s -> "Current imodels: " <> show (Map.keys (s.store))) ]
     , D.div_
         [ text $ map (_.store) stateEv <#> printStoreEmissions
