@@ -2,10 +2,8 @@ module Main where
 
 import Prelude
 
-import Bolson.Core (envy)
 import Bolson.Core as Bolson
 import Control.Alt ((<|>))
-import Control.Monad.ST.Class (class MonadST)
 import Data.Array (null)
 import Data.Array as Array
 import Data.Either (Either(..))
@@ -27,9 +25,7 @@ import Deku.Do as DekuDo
 import Deku.Listeners (click)
 import Deku.Toplevel (runInBody)
 import Effect (Effect)
-import Effect.Class.Console (log)
-import FRP.Event (AnEvent, count, fold, fromEvent, memoize, toEvent)
-import Paraglider.Rx (doOnNext)
+import FRP.Event (AnEvent, count, fold, keepLatest, memoize)
 import Web.Event.Event (target)
 import Web.HTML.HTMLInputElement (fromEventTarget, value)
 
@@ -52,9 +48,9 @@ derive instance genericAction :: Generic Action _
 instance eqAction :: Eq Action where eq = genericEq
 
 dynamicPart :: ∀ s m l p . Korok s m => MailHub m SourceId Action
-  -> { ent :: Domable m l p, childEv :: MailEvent m SourceId Action }
+  -> { ent :: Domable m l p, stateEv :: AnEvent m MyState }
 dynamicPart (mailPush /\ mailEv') = do
-  { childEv: mailEv
+  { stateEv: exposedUpwardsStateEv
   , ent: D.div_
     [ dyn_ D.div $ mkRowEv <$> serializedIdsEv
     , D.div_
@@ -66,6 +62,11 @@ dynamicPart (mailPush /\ mailEv') = do
   }
   where
     mailEv = mailEv' <|> (pure $ stamp 0 AddMe) <|> (pure $ stamp 1 AddMe)
+
+    exposedUpwardsStateEv = do
+      let stateFEv = convertUpwardsActionToState <$> mailEv
+      let stateAggrEv = (fold ($) (stateFEv <|> pure identity) (initialState))
+      keepLatest $ memoize (stateAggrEv) identity
 
     serializedIdsEv :: AnEvent m SourceId
     serializedIdsEv = filterMap
@@ -143,11 +144,7 @@ initialState =
 
 nut :: ∀ s m l p. Korok s m => Domable m l p
 nut = DekuDo.do
-  { ent, childEv } <- useChild dynamicPart
-
-  let stateFEv = convertUpwardsActionToState <$> childEv
-  stateEv <- envy <<< memoize do
-    (fold ($) (stateFEv <|> pure identity) (initialState))
+  { ent, stateEv } <- useChild dynamicPart
 
   D.div_
     [ ent
@@ -181,15 +178,6 @@ printStoreEmissions s = do
 
 main :: Effect Unit
 main = runInBody nut
-
-logEmission
-  :: forall s m a
-   . Korok s m
-  => Always (m Unit) (Effect Unit)
-  => (a -> String)
-  -> AnEvent m a
-  -> AnEvent m a
-logEmission onEmit e = fromEvent $ doOnNext (\a -> log $ onEmit a) $ toEvent e
 
 useChild
   :: forall s m lock logic obj a r
