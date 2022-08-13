@@ -2,6 +2,7 @@
 , name = "deku-starter"
 , dependencies =
   [ "arrays"
+  , "bolson"
   , "console"
   , "control"
   , "deku"
@@ -18,6 +19,7 @@
   , "profunctor"
   , "routing"
   , "routing-duplex"
+  , "st"
   , "tuples"
   , "web-events"
   , "web-html"
