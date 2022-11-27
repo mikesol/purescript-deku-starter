@@ -1,2 +1,2 @@
-var main = require("../output/Main/index.js");
-main.main();
+import { main } from "../output/Main/index.js";
+main();
