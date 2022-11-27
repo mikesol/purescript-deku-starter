@@ -1,4 +1,10 @@
-const tailwindcss = require("tailwindcss");
 module.exports = {
-  plugins: ["postcss-preset-env", tailwindcss],
-};
+  plugins: {
+    'postcss-import': {},
+    tailwindcss: {},
+    'postcss-focus-visible': {
+      replaceWith: '[data-focus-visible-added]',
+    },
+    autoprefixer: {},
+  },
+}
